@@ -1,0 +1,47 @@
+name: prune
+description: TAMP prune
+workspace: A6000
+project: prune
+
+#entrypoint: /home/chuziyuan/zju/qwen_tamp/math-v/MATH-V/evaluate.sh
+#entrypoint: /home/chuziyuan/zju/qwen_tamp/ovd_eval/OVDEval/run_full_experiment.sh
+entrypoint: /home/chuziyuan/zju/qwen_tamp/test.sh
+max_restarts: 0
+
+resources:
+  resource_pool: amp-48g
+  slots_per_trial: 4
+  is_single_node: true
+
+
+bind_mounts:
+  - host_path: /mount/HOME/chuziyuan
+    container_path: /home/chuziyuan
+  - host_path: /mount/NAS1/public
+    container_path: /run/determined/NAS1/public
+
+environment:
+#  image: 10.214.180.148:8192/shuai:cuda11.3-12.4
+  image: 10.214.180.148:8192/chuziyuan:cuda11.3-12.1-12.4-v3
+
+checkpoint_storage:
+ type: shared_fs
+ host_path: /mount/NAS1/public/liangxiao
+ # The optional path where checkpoints will be written to and read from.
+ # Must be a subdirectory of the host_path or an absolute path containing the host_path.
+ # If unset, checkpoints are written to and read from the host_path.
+ # checkpoint 是 /mount/NAS1/public/liangxiao/TestProject 的子文件夹
+ storage_path: checkpoint
+ save_experiment_best: 0
+ save_trial_best: 1
+ save_trial_latest: 1
+
+searcher:
+  name: single
+  metric: validation_loss
+  max_length:
+      epochs: 1
+  smaller_is_better: true
+
+profiling:
+  enabled: true
